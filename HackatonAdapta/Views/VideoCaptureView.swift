@@ -11,7 +11,7 @@ import CoreLocation
 
 struct VideoCaptureView: View {
     @StateObject private var recorder = VideoRecorder()
-    @StateObject private var locationManager = LocationManager()
+    @ObservedObject var locationManager = LocationManager()
 
     var body: some View {
         ZStack {

@@ -14,6 +14,8 @@ class VideoRecorder: NSObject, ObservableObject, AVCaptureFileOutputRecordingDel
 
     @Published var isRecording = false
     @Published var lastRecordingDate: Date?
+    @Published var locationManager = LocationManager()
+    
 
     func setup() {
         captureSession.beginConfiguration()
@@ -77,9 +79,9 @@ class VideoRecorder: NSObject, ObservableObject, AVCaptureFileOutputRecordingDel
         Task {
             let uploader = VideoUploadManager()
             let firestore = FirestoreManager.shared
-            let userID = "demo_user" // Substitua se tiver autenticação
+            let userID = "demo_user" //MARK: Substituir
             let videoDate = Date()
-            let location = LocationManager().lastKnownLocation  // ou injete do lado de fora
+            let location = await locationManager.getLocation()
 
             if let videoURL = await uploader.uploadVideo(fileURL: outputFileURL, userID: userID) {
                 await firestore.saveVideoMetadata(

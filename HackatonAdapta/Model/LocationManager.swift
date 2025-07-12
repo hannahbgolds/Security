@@ -9,9 +9,8 @@ import CoreLocation
 
 class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     private let manager = CLLocationManager()
+
     @Published var lastKnownLocation: CLLocationCoordinate2D?
-    
-    var onLocationUpdate: (() -> Void)?
 
     override init() {
         super.init()
@@ -19,19 +18,29 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         manager.desiredAccuracy = kCLLocationAccuracyBest
         manager.requestWhenInUseAuthorization()
     }
+    
+    func getLocation() async -> CLLocationCoordinate2D? {
+        await withCheckedContinuation { continuation in
+            self.continuation = continuation
+            requestLocation()
+        }
+    }
+
+    private var continuation: CheckedContinuation<CLLocationCoordinate2D?, Never>?
+
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let location = locations.last else { return }
+        lastKnownLocation = location.coordinate
+        continuation?.resume(returning: location.coordinate)
+        continuation = nil
+    }
 
     func requestLocation() {
         manager.requestLocation()
     }
 
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        lastKnownLocation = locations.first?.coordinate
-        onLocationUpdate?()
-        onLocationUpdate = nil 
-    }
-
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        print("Erro ao obter localização: \(error)")
+        print("Erro ao obter localização: \(error.localizedDescription)")
     }
 }
 
