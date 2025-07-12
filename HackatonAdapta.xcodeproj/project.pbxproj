@@ -396,7 +396,10 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Este app precisa usar a câmera";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Este app precisa da sua localização para marcar fotos";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Precisamos da sua localização para marcar onde o vídeo foi gravado";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Precisamos acessar o microfone para gravar áudio nos vídeos";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Precisamos salvar os vídeos gravados no seu álbum";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Precisamos acessar a camera ";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -437,7 +440,10 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Este app precisa usar a câmera";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Este app precisa da sua localização para marcar fotos";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Precisamos da sua localização para marcar onde o vídeo foi gravado";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Precisamos acessar o microfone para gravar áudio nos vídeos";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Precisamos salvar os vídeos gravados no seu álbum";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Precisamos acessar a camera ";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
