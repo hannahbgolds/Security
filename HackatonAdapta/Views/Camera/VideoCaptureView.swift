@@ -10,8 +10,10 @@ import AVFoundation
 import CoreLocation
 
 struct VideoCaptureView: View {
+    @Environment(\.dismiss) private var dismiss
     @StateObject private var recorder = VideoRecorder()
     @ObservedObject var locationManager = LocationManager()
+    @State private var flashOn = false
 
     var body: some View {
         ZStack {
@@ -19,6 +21,31 @@ struct VideoCaptureView: View {
                 .ignoresSafeArea()
 
             VStack {
+                HStack {
+                    // Flash toggle
+                    Button(action: toggleFlash) {
+                        Image(systemName: flashOn ? "bolt.fill" : "bolt.slash")
+                            .font(.title2)
+                            .foregroundColor(.yellow)
+                            .padding()
+                            .background(Color.black.opacity(0.5))
+                            .clipShape(Circle())
+                    }
+                    Spacer()
+
+                    // Dismiss button
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.title2)
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(Color.black.opacity(0.5))
+                            .clipShape(Circle())
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.top, 30)
+
                 Spacer()
 
                 if let date = recorder.lastRecordingDate {
@@ -51,20 +78,11 @@ struct VideoCaptureView: View {
             recorder.setup()
         }
     }
-}
 
-// Preview da câmera
-struct CameraPreview: UIViewRepresentable {
-    let session: AVCaptureSession
-
-    func makeUIView(context: Context) -> UIView {
-        let view = UIView()
-        let previewLayer = AVCaptureVideoPreviewLayer(session: session)
-        previewLayer.videoGravity = .resizeAspectFill
-        previewLayer.frame = UIScreen.main.bounds
-        view.layer.addSublayer(previewLayer)
-        return view
+    private func toggleFlash() {
+        flashOn.toggle()
+        recorder.setFlash(enabled: flashOn)
     }
-
-    func updateUIView(_ uiView: UIView, context: Context) {}
 }
+
+

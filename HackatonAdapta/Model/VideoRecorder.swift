@@ -58,6 +58,20 @@ class VideoRecorder: NSObject, ObservableObject, AVCaptureFileOutputRecordingDel
     func stopRecording() {
         movieOutput.stopRecording()
     }
+    
+    func setFlash(enabled: Bool) {
+        guard let device = AVCaptureDevice.default(for: .video),
+              device.hasTorch else { return }
+
+        do {
+            try device.lockForConfiguration()
+            device.torchMode = enabled ? .on : .off
+            device.unlockForConfiguration()
+        } catch {
+            print("❌ Erro ao configurar o flash: \(error.localizedDescription)")
+        }
+    }
+
 
     // MARK: - Delegate
     func fileOutput(_ output: AVCaptureFileOutput, didFinishRecordingTo outputFileURL: URL,

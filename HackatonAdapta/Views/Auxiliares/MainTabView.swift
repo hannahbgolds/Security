@@ -12,9 +12,10 @@ struct MainTabView: View {
                 }
                 .tag(0)
 
-            Text("Camera")
+            
+            Color.clear
                 .tabItem {
-                    Label("Camera", systemImage: "camera")
+                    Label("Câmera", systemImage: "camera")
                 }
                 .tag(1)
 
@@ -37,7 +38,10 @@ struct MainTabView: View {
     }
 }
 
-
 #Preview {
     MainTabView()
 }
+
+
+
+
