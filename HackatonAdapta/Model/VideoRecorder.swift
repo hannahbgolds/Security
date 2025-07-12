@@ -62,7 +62,6 @@ class VideoRecorder: NSObject, ObservableObject, AVCaptureFileOutputRecordingDel
                     from connections: [AVCaptureConnection], error: Error?) {
         isRecording = false
 
-        // Salvar no álbum
         PHPhotoLibrary.requestAuthorization { status in
             if status == .authorized {
                 PHPhotoLibrary.shared().performChanges {
@@ -72,6 +71,23 @@ class VideoRecorder: NSObject, ObservableObject, AVCaptureFileOutputRecordingDel
                         print("Erro ao salvar vídeo: \(error.localizedDescription)")
                     }
                 }
+            }
+        }
+
+        Task {
+            let uploader = VideoUploadManager()
+            let firestore = FirestoreManager.shared
+            let userID = "demo_user" // Substitua se tiver autenticação
+            let videoDate = Date()
+            let location = LocationManager().lastKnownLocation  // ou injete do lado de fora
+
+            if let videoURL = await uploader.uploadVideo(fileURL: outputFileURL, userID: userID) {
+                await firestore.saveVideoMetadata(
+                    userID: userID,
+                    videoURL: videoURL,
+                    date: videoDate,
+                    location: location
+                )
             }
         }
     }
