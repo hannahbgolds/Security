@@ -1,29 +1,42 @@
 import SwiftUI
 
 struct MainTabView: View {
+    @State private var selectedTab = 0
+    @State private var showCamera = false
+
     var body: some View {
-        TabView {
-            // MARK: - Infrações
+        TabView(selection: $selectedTab) {
             InfractionView()
                 .tabItem {
-                    Label("Infrações", systemImage: "exclamationmark.triangle.fill")
+                    Label("Infrações", systemImage: "list.bullet")
                 }
+                .tag(0)
 
-            // MARK: - Câmera
-            CameraView()
+            Text("Camera")
                 .tabItem {
-                    Label("Câmera", systemImage: "camera.circle.fill")
+                    Label("Camera", systemImage: "camera")
                 }
+                .tag(1)
 
-            // MARK: - Chat
-            ChatView()
+            Text("Chat")
                 .tabItem {
-                    Label("Chat", systemImage: "message.fill")
+                    Label("Chat", systemImage: "bubble.left")
                 }
+                .tag(2)
         }
-        .tint(.red)
+        .onChange(of: selectedTab) {
+            if selectedTab == 1 {
+                showCamera = true
+            }
+        }
+        .sheet(isPresented: $showCamera, onDismiss: {
+            selectedTab = 0
+        }) {
+            VideoCaptureView()
+        }
     }
 }
+
 
 #Preview {
     MainTabView()
