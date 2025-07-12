@@ -79,12 +79,12 @@ class VideoRecorder: NSObject, ObservableObject, AVCaptureFileOutputRecordingDel
         Task {
             let uploader = VideoUploadManager()
             let firestore = FirestoreManager.shared
-            let userID = "demo_user" //MARK: Substituir
+            let userID = "demo_user" //MARK: Substituir 
             let videoDate = Date()
             let location = await locationManager.getLocation()
 
             if let videoURL = await uploader.uploadVideo(fileURL: outputFileURL, userID: userID) {
-                await firestore.saveVideoMetadata(
+                _ = await firestore.saveEnvio(
                     userID: userID,
                     videoURL: videoURL,
                     date: videoDate,

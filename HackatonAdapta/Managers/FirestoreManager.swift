@@ -11,35 +11,116 @@ import CoreLocation
 
 @Observable
 class FirestoreManager {
-    
+
     static let shared = FirestoreManager()
     private init() {}
-    
-    private let db = Firestore.firestore()
-    private let videosCollection = "Videos"
 
-    /// Salva os metadados de um vídeo no Firestore
-    func saveVideoMetadata(userID: String, videoURL: String, date: Date, location: CLLocationCoordinate2D?) async {
-        var data: [String: Any] = [
+    private let db = Firestore.firestore()
+
+    /// Salva um envio e retorna a referência do documento criado
+    func saveEnvio(userID: String, videoURL: String, date: Date, location: CLLocationCoordinate2D?) async -> DocumentReference? {
+        var envioData: [String: Any] = [
             "userID": userID,
             "videoURL": videoURL,
-            "timestamp": Timestamp(date: date)
+            "timestamp": Timestamp(date: date),
+            "status": "pendente"
         ]
 
         if let location = location {
-            data["location"] = [
+            envioData["location"] = [
                 "latitude": location.latitude,
                 "longitude": location.longitude
             ]
         }
 
         do {
-            try await db.collection(videosCollection).addDocument(data: data)
-            print("✅ Metadados salvos no Firestore")
+            let ref = try await db.collection("Envios").addDocument(data: envioData)
+            print("✅ Envio salvo com ID: \(ref.documentID)")
+            return ref
         } catch {
-            print("❌ Erro ao salvar no Firestore: \(error.localizedDescription)")
+            print("❌ Erro ao salvar envio: \(error.localizedDescription)")
+            return nil
         }
     }
+
+    // MARK: - Infração (Testes)
+    /// Cria uma infração associada a um envio existente
+    func saveInfraction(for envioRef: DocumentReference, artigo: Int, descricao: String) async {
+        let infractionData: [String: Any] = [
+            "artigo": artigo,
+            "descricao": descricao,
+            "dataAnalise": Timestamp(date: Date()),
+            "envioRef": envioRef
+        ]
+
+        do {
+            try await db.collection("Infracoes").addDocument(data: infractionData)
+            try await envioRef.updateData(["status": "analisado"])
+            print("✅ Infração salva e envio atualizado")
+        } catch {
+            print("❌ Erro ao salvar infração: \(error.localizedDescription)")
+        }
+    }
+
+    /// Função de teste que cria uma infração ligada a um envio específico
+    func testCriarInfracao() {
+        let envioID = "oKyB2OrC3IuQ0DmsM6lp"
+        let envioRef = db.collection("Envios").document(envioID)
+        
+        Task {
+            await FirestoreManager.shared.saveInfraction(
+                for: envioRef,
+                artigo: 208,
+                descricao: "Avanço de sinal"
+            )
+        }
+    }
+    
+    
+    func fetchEnviosDoUsuario(userID: String) async -> [Envio] {
+        var envios: [Envio] = []
+
+        do {
+            let snapshot = try await db.collection("Envios")
+                .whereField("userID", isEqualTo: userID)
+                .order(by: "timestamp", descending: true)
+                .getDocuments()
+
+            for doc in snapshot.documents {
+                let data = doc.data()
+                let locationData = data["location"] as? [String: Double]
+
+                if let envio = Envio(from: doc) {
+                    envios.append(envio)
+                }
+
+            }
+
+        } catch {
+            print("❌ Erro ao buscar envios: \(error.localizedDescription)")
+        }
+
+        return envios
+    }
+
+    func fetchInfracoesParaEnvio(envioID: String) async -> [Infracao] {
+        var infracoes: [Infracao] = []
+        
+        do {
+            let envioRef = db.collection("Envios").document(envioID)
+            let snapshot = try await db.collection("Infracoes")
+                .whereField("envioRef", isEqualTo: envioRef)
+                .getDocuments()
+
+            for doc in snapshot.documents {
+                if let infracao = Infracao(from: doc) {
+                    infracoes.append(infracao)
+                }
+            }
+        } catch {
+            print("❌ Erro ao buscar infrações: \(error.localizedDescription)")
+        }
+
+        return infracoes
+    }
 }
-
-
