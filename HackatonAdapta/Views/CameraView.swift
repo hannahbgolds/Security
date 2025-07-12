@@ -33,3 +33,7 @@ struct CameraView: View {
         }
     }
 }
+
+#Preview{
+    
+}
