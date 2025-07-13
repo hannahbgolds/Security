@@ -72,7 +72,6 @@ class VideoRecorder: NSObject, ObservableObject, AVCaptureFileOutputRecordingDel
         }
     }
 
-
     // MARK: - Delegate
     func fileOutput(_ output: AVCaptureFileOutput, didFinishRecordingTo outputFileURL: URL,
                     from connections: [AVCaptureConnection], error: Error?) {
@@ -92,19 +91,61 @@ class VideoRecorder: NSObject, ObservableObject, AVCaptureFileOutputRecordingDel
 
         Task {
             let uploader = VideoUploadManager()
-            let firestore = FirestoreManager.shared
-            let userID = "demo_user" //MARK: Substituir 
+//            let firestore = FirestoreManager.shared
+            let userID = "demo_user" //MARK: Substituir
             let videoDate = Date()
             let location = await locationManager.getLocation()
 
             if let videoURL = await uploader.uploadVideo(fileURL: outputFileURL, userID: userID) {
-                _ = await firestore.saveEnvio(
-                    userID: userID,
-                    videoURL: videoURL,
-                    date: videoDate,
-                    location: location
-                )
+                // ✅ (1) Criar o JSON com os dados
+                let locationDict: [String: Double]? = {
+                    guard let loc = location else { return nil }
+                    return ["latitude": loc.latitude, "longitude": loc.longitude]
+                }()
+                
+                let payload: [String: Any] = [
+                    "userID": userID,
+                    "videoURL": videoURL,
+                    "date": ISO8601DateFormatter().string(from: videoDate),
+                    "location": locationDict as Any // aqui é opcional, pode ser nil
+                ]
+                
+                print("***********************")
+                print(payload)
+                print("***********************")
+
+                // ✅ (2) Serializar o JSON
+                guard let jsonData = try? JSONSerialization.data(withJSONObject: payload) else {
+                    print("Erro ao converter dados para JSON")
+                    return
+                }
+
+                // ✅ (3) Criar a requisição
+                guard let url = URL(string: "http://169.254.226.169:4000/exemplo") else {
+                    print("URL inválida")
+                    return
+                }
+
+                var request = URLRequest(url: url)
+                request.httpMethod = "POST"
+                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+                request.httpBody = jsonData
+
+                // ✅ (4) Fazer a requisição
+                do {
+                    let (data, response) = try await URLSession.shared.data(for: request)
+
+                    if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+                        print("Envio registrado com sucesso na API")
+                    } else {
+                        print("Erro na resposta da API")
+                        print(String(data: data, encoding: .utf8) ?? "Sem corpo de resposta")
+                    }
+                } catch {
+                    print("Erro ao fazer requisição para a API: \(error)")
+                }
             }
         }
+
     }
 }
