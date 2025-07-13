@@ -121,7 +121,7 @@ class VideoRecorder: NSObject, ObservableObject, AVCaptureFileOutputRecordingDel
                 }
 
                 // ✅ (3) Criar a requisição
-                guard let url = URL(string: "http://169.254.226.169:4000/exemplo") else {
+                guard let url = URL(string: "http://169.254.47.39:5000/exemplo") else {
                     print("URL inválida")
                     return
                 }

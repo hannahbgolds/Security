@@ -1,34 +1,43 @@
-//
-//  Infraction.swift
-//  HackatonAdapta
-//
-//  Created by Hannah Goldstein on 12/07/25.
-//
-
 import Foundation
-import FirebaseFirestore
 
-struct Infracao: Identifiable {
-    let id: String
-    let artigo: Int
-    let descricao: String
-    let dataAnalise: Date?
-    let envioRef: DocumentReference
+struct Infracao: Codable {
+    var comportamentoObservado: String
+    var cor: String
+    var modelo: String
+    var placa: String
+    var possivelInfracao: String
+    var referencias: [ReferenciaArtigo]
 
-    init?(from document: DocumentSnapshot) {
-        let data = document.data()
+    init?(from data: [String: Any]) {
         guard
-            let artigo = data?["artigo"] as? Int,
-            let descricao = data?["descricao"] as? String,
-            let envioRef = data?["envioRef"] as? DocumentReference
+            let comportamento = data["Comportamento observado"] as? String,
+            let cor = data["Cor"] as? String,
+            let modelo = data["Modelo"] as? String,
+            let placa = data["Placa"] as? String,
+            let possivelInfracao = data["Possível infração"] as? String
         else {
             return nil
         }
 
-        self.id = document.documentID
-        self.artigo = artigo
-        self.descricao = descricao
-        self.envioRef = envioRef
-        self.dataAnalise = (data?["dataAnalise"] as? Timestamp)?.dateValue()
+        self.comportamentoObservado = comportamento
+        self.cor = cor
+        self.modelo = modelo
+        self.placa = placa
+        self.possivelInfracao = possivelInfracao
+
+        if let refs = data["law_references"] as? [[String: Any]] {
+            self.referencias = refs.compactMap { ReferenciaArtigo(from: $0) }
+        } else {
+            self.referencias = []
+        }
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case comportamentoObservado = "Comportamento observado"
+        case cor = "Cor"
+        case modelo = "Modelo"
+        case placa = "Placa"
+        case possivelInfracao = "Possível infração"
+        case referencias = "law_references"
     }
 }

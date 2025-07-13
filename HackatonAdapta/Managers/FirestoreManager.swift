@@ -102,25 +102,28 @@ class FirestoreManager {
 
         return envios
     }
-
-    func fetchInfracoesParaEnvio(envioID: String) async -> [Infracao] {
-        var infracoes: [Infracao] = []
-        
+    
+    func getAllEnvios() async -> [Envio] {
         do {
-            let envioRef = db.collection("Envios").document(envioID)
-            let snapshot = try await db.collection("Infracoes")
-                .whereField("envioRef", isEqualTo: envioRef)
-                .getDocuments()
-
-            for doc in snapshot.documents {
-                if let infracao = Infracao(from: doc) {
-                    infracoes.append(infracao)
+            let querySnapshot = try await db.collection("Envios").getDocuments()
+            var allEnvios: [Envio] = []
+            
+            for document in querySnapshot.documents {
+                do {
+                    // MARK: Tem forma melhor de fazer com certeza
+                    let id = document.documentID
+                    var apiResponse = try document.data(as: Envio.self)
+//                    apiResponse.id = id
+                    allEnvios.append(apiResponse)
+                    return allEnvios
+                } catch {
+                    print("Failed to parse document data into Envio for document ID: \(document.documentID). Error: \(error)")
+                    return []
                 }
             }
         } catch {
-            print("❌ Erro ao buscar infrações: \(error.localizedDescription)")
+            print("Error getting documents: \(error)")
         }
-
-        return infracoes
+        return []
     }
 }

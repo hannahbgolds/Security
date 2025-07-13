@@ -9,21 +9,22 @@ import SwiftUI
 import CoreLocation
 
 struct InfractionView: View {
-    @StateObject private var viewModel = InfractionsViewModel()
+    @State var envios: [Envio] = []
 
     var body: some View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 16) {
-                    ForEach(viewModel.enviosComInfracoes, id: \.0.id) { envio, infracoes in
-                        EnvioCard(envio: envio, infracoes: infracoes)
+                    ForEach(envios, id: \.videoURL) { envio in
+                        EnvioCard(envio: envio)
                     }
                 }
                 .padding()
             }
             .navigationTitle("Infrações Enviadas")
             .task {
-                await viewModel.carregarEnviosComInfracoes()
+                envios = await FirestoreManager.shared.getAllEnvios()
+                print("Envios: \(envios)")
             }
         }
     }
@@ -31,7 +32,6 @@ struct InfractionView: View {
 
 struct EnvioCard: View {
     let envio: Envio
-    let infracoes: [Infracao]
     
     @State private var endereco: String? = nil
 
@@ -56,18 +56,18 @@ struct EnvioCard: View {
             }
 
             HStack {
-                Text(envio.timestamp, style: .date)
+                Text(envio.date, style: .date)
                 Spacer()
                 Text("Status: \(envio.status.capitalized)")
                     .bold()
             }
-
-            if !infracoes.isEmpty {
+            
+            if let infracoes = envio.infracao {
                 Text("Possíveis Infrações")
                     .bold()
-
-                ForEach(infracoes) { infracao in
-                    Text("• \(infracao.descricao)")
+                
+                ForEach(infracoes.referencias, id:\.lawReference) { infracao in
+                    Text("• \(infracao.ticket)")
                 }
             } else {
                 Text("Sem infrações associadas")
